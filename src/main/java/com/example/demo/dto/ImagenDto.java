@@ -9,17 +9,18 @@ import lombok.Setter;
 public class ImagenDto {
 	
     private String nombre;
-    private byte[] contenido; // Almacena el contenido de la imagen en formato binario
-    private int idVehiculo; // Referencia al vehículo asociado
+    private String ruta;
+    private int idVehiculo; 
 
     public ImagenDto() {
         super();
     }
 
-    public ImagenDto(String nombre, byte[] contenido, int idVehiculo) {
+    public ImagenDto(String nombre, String ruta, int idVehiculo) {
         super();
         this.nombre = nombre;
-        this.contenido = contenido;
+        this.ruta = ruta;
         this.idVehiculo = idVehiculo;
     }
+    
 }
