@@ -1,11 +1,11 @@
 package com.example.demo.dto;
 
-public enum Rol {
+public enum Rol{
 	
 	ADMIN("Admin"),
     EMPLEADO("Empleado"),
     PORTA_AUTOMOVILES("Porta Automóviles");
-
+	
     private String displayName;
 
     Rol(String displayName) {
@@ -15,5 +15,5 @@ public enum Rol {
     public String getDisplayName() {
         return displayName;
     }
-
+   
 }

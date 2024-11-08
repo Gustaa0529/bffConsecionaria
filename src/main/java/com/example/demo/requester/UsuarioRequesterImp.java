@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 @Service
 public class UsuarioRequesterImp implements UsuarioRequester {
 
-    @Value("${pathBase}")
+    @Value("${pathBaseUsuario}")
     private String usuariosServiceUrl;
 
     private final RestTemplate restTemplate;

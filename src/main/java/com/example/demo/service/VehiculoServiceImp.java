@@ -1,7 +1,5 @@
 package com.example.demo.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -17,9 +15,9 @@ public class VehiculoServiceImp implements VehiculoService {
 	private VehiculoRequester vehiculoRequester;
 
 	@Override
-	public Page<VehiculoDto> listarConPaginadoV2(Integer size, String sort, Integer numPage) throws Exception {
+	public Page<VehiculoDto> listarConPaginadoPorSucursal(Integer size, String sort, Integer numPage, int idSucursal) throws Exception {
 		// TODO Auto-generated method stub
-		return vehiculoRequester.listarConPaginadoV2(size, sort, numPage);
+		return vehiculoRequester.listarConPaginadoPorSucursal(size, sort, numPage, idSucursal);
 	}
 	
 }

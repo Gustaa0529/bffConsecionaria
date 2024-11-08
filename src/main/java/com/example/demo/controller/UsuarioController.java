@@ -25,7 +25,9 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.UsuarioDto;
 import com.example.demo.requester.UsuarioRequester;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpSession;
+
 
 @RestController
 @RequestMapping("/usuario")
@@ -52,7 +54,8 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest, HttpSession session) throws Exception {
-    	 Authentication authentication = authenticationManager.authenticate(
+      
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getCorreo(),
                         loginRequest.getContrasena()
@@ -61,12 +64,17 @@ public class UsuarioController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        
         UsuarioDto usuarioDto = usuarioRequester.getUsuarioByCorreo(loginRequest.getCorreo());
 
         final String token = jwtTokenProvider.createToken(authentication, usuarioDto);
 
+        session.setAttribute("usuario", usuarioDto);
+        session.setAttribute("idSucursal", usuarioDto.getIdSucursal());  
+
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authentication", token);
+
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         AtomicReference<String> rol = new AtomicReference<>("");
         userDetails.getAuthorities().forEach(x -> {
@@ -76,15 +84,44 @@ public class UsuarioController {
         return new ResponseEntity<>(new JwtResponse(token, rol.get(), userDetails.getUsername(), Collections.emptyList()), responseHeaders, HttpStatus.OK);
     }
 
-    @GetMapping("/perfil")
-    public ResponseEntity<UsuarioDto> obtenerPerfil(@RequestHeader("Authorization") String token) {
-        // Validar token y obtener perfil de usuario
-        if (jwtTokenProvider.validateToken(token)) {
-            String username = jwtTokenProvider.getUsername(token);
-            UsuarioDto usuario = usuarioRequester.getUsuarioByCorreo(username);
-            return ResponseEntity.ok(usuario);
-        } else {
-            return ResponseEntity.status(401).build();
+    @GetMapping("/verToken")
+    public ResponseEntity<String> verContenidoToken(@RequestHeader("Authorization") String token) {
+        try {
+            // Eliminar el prefijo "Bearer " del token (si lo tiene)
+            String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+
+            // Validar el token
+            if (!jwtTokenProvider.validateToken(jwtToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+            }
+
+            // Obtener los claims del token
+            Claims claims = jwtTokenProvider.getClaims(jwtToken);
+
+            // Mostrar todos los claims
+            StringBuilder tokenInfo = new StringBuilder();
+            tokenInfo.append("Token Claims: \n");
+
+            // Imprimir los claims del token (puedes adaptarlo según lo que necesites ver)
+            claims.forEach((key, value) -> tokenInfo.append(key).append(": ").append(value).append("\n"));
+
+            // Devolver los claims como respuesta
+            return ResponseEntity.ok(tokenInfo.toString());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar el token: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/perfil")
+    public ResponseEntity<UsuarioDto> obtenerPerfil(HttpSession session) {
+        // Recuperamos el usuario desde la sesión
+        UsuarioDto usuario = (UsuarioDto) session.getAttribute("usuario");
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
+
 }

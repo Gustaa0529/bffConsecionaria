@@ -24,7 +24,7 @@ public class VehiculoRequesterImp implements VehiculoRequester {
 
 	private RestTemplate restTemplate = new RestTemplate();
 	
-	@Value("${pathBase}")
+	@Value("${pathBaseVehiculo}")
 	private String urlBase;
 	
 	@Value("${paginadoVehiculo}")
@@ -59,12 +59,14 @@ public class VehiculoRequesterImp implements VehiculoRequester {
 	}
 
 	@Override
-	public Page<VehiculoDto> listarConPaginadoV2(Integer size, String sort, Integer numPage) throws Exception {
-	    // Asegurarnos de que el nombre del parámetro 'numPage' sea correcto en la URL
-	    String url = String.format("%s%s?size=%d&sort=%s&numPage=%d", urlBase, pathlistar, size, sort, numPage);
+	public Page<VehiculoDto> listarConPaginadoPorSucursal(Integer size, String sort, Integer numPage, int idSucursal) throws Exception {
+	    
+	    String url = String.format("%s%s?size=%d&sort=%s&numPage=%d&idSucursal=%s", 
+	                               urlBase, pathlistar, size, sort, numPage, idSucursal);
 	    log.info("Se envía solicitud a: {}", url);
 
 	    try {
+	       
 	        ResponseEntity<PaginadoDto<VehiculoDto>> response = restTemplate.exchange(
 	                url,
 	                HttpMethod.GET,
