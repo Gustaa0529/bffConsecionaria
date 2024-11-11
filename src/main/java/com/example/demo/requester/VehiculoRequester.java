@@ -11,4 +11,6 @@ public interface VehiculoRequester {
 
 	public List<VehiculoDto> listar() throws Exception;
 	public Page<VehiculoDto> listarConPaginadoPorSucursal( Integer size, String sort, Integer numPage, int idSucursal ) throws Exception;
+	public VehiculoDto actualizarPrecio(int id, int nuevoPrecio) throws Exception;
+	public VehiculoDto agregarVehiculo(VehiculoDto vehiculoDto) throws Exception;
 }

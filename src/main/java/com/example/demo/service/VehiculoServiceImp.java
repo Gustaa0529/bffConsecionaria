@@ -19,5 +19,17 @@ public class VehiculoServiceImp implements VehiculoService {
 		// TODO Auto-generated method stub
 		return vehiculoRequester.listarConPaginadoPorSucursal(size, sort, numPage, idSucursal);
 	}
+
+	@Override
+	public VehiculoDto agregarVehiculo(VehiculoDto vehiculoDto) throws Exception {
+		// TODO Auto-generated method stub
+		return vehiculoRequester.agregarVehiculo(vehiculoDto);
+	}
+
+	@Override
+	public VehiculoDto actualizarPrecio(int id, int nuevoPrecio) throws Exception {
+		// TODO Auto-generated method stub
+		return vehiculoRequester.actualizarPrecio(id, nuevoPrecio);
+	}
 	
 }

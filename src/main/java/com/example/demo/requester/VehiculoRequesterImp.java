@@ -1,5 +1,4 @@
 package com.example.demo.requester;
-
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,22 @@ public class VehiculoRequesterImp implements VehiculoRequester {
 		this.restTemplate = builder.build();
 	
 	}
-
+	
+	@Override
+	public VehiculoDto actualizarPrecio(int id, int nuevoPrecio) throws Exception {
+	    String url = urlBase + "/vehiculos/" + id + "/actualizar-precio?nuevoPrecio=" + nuevoPrecio;
+	    ResponseEntity<VehiculoDto> response = restTemplate.exchange(url, HttpMethod.PUT, null, VehiculoDto.class);
+	    return response.getBody();
+	}
+	
+	@Override public VehiculoDto agregarVehiculo(VehiculoDto vehiculoDto) throws Exception { 
+		HttpHeaders headers = new HttpHeaders(); 
+		headers.set("Content-Type", "application/json"); 
+		HttpEntity<VehiculoDto> request = new HttpEntity<>(vehiculoDto, headers); 
+		ResponseEntity<VehiculoDto> response = restTemplate.postForEntity(urlBase + "/vehiculos/agregar", request, VehiculoDto.class); 
+		return response.getBody(); 
+		}
+	
 	@Override
 	public List<VehiculoDto> listar() throws Exception {
         log.info("Se envía solicitud a: {}", urlBase.concat(pathlistar));

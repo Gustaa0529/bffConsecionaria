@@ -30,7 +30,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         final String requestTokenHeader = request.getHeader("Authorization");
 
         String path = request.getRequestURI();
-        if (path.equals("/usuario/login") || path.equals("/vehiculo/paginado")) {
+        if (path.equals("/usuario/registro") || path.equals("/vehiculo/paginado") ||  path.equals("/vehiculo/actualizar-precio/{id}")) {
             chain.doFilter(request, response);
             return; 
         }

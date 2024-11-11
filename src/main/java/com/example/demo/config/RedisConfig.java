@@ -10,7 +10,7 @@ import org.springframework.session.data.redis.RedisIndexedSessionRepository;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisIndexedHttpSession;
 
 @Configuration
-@EnableRedisIndexedHttpSession(maxInactiveIntervalInSeconds = 1800)
+@EnableRedisIndexedHttpSession(maxInactiveIntervalInSeconds = 4800)
 public class RedisConfig {
 
    @Bean

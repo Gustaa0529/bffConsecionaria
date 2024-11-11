@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +40,7 @@ public class UsuarioController {
 	
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
-
-
+    
     @PostMapping("/registro")
     public ResponseEntity<UsuarioDto> registro(@RequestBody UsuarioDto usuarioDto) throws Exception {
     	if (usuarioDto == null) {
@@ -54,7 +52,6 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest, HttpSession session) throws Exception {
-      
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getCorreo(),
@@ -64,13 +61,16 @@ public class UsuarioController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        
         UsuarioDto usuarioDto = usuarioRequester.getUsuarioByCorreo(loginRequest.getCorreo());
 
         final String token = jwtTokenProvider.createToken(authentication, usuarioDto);
 
-        session.setAttribute("usuario", usuarioDto);
-        session.setAttribute("idSucursal", usuarioDto.getIdSucursal());  
+        if (usuarioDto != null && usuarioDto.getIdSucursal() != null) {
+        	session.setAttribute("usuario", usuarioDto); 
+        	session.setAttribute("idSucursal", usuarioDto.getIdSucursal()); 
+        	} else { 
+        		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); 
+        		}
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authentication", token);
@@ -81,8 +81,9 @@ public class UsuarioController {
             rol.set(x.getAuthority());
         });
 
-        return new ResponseEntity<>(new JwtResponse(token, rol.get(), userDetails.getUsername(), Collections.emptyList()), responseHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(new JwtResponse(token, rol.get(), userDetails.getUsername(), usuarioDto), responseHeaders, HttpStatus.OK);
     }
+
 
     @GetMapping("/verToken")
     public ResponseEntity<String> verContenidoToken(@RequestHeader("Authorization") String token) {
@@ -122,6 +123,14 @@ public class UsuarioController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
+    }
+    
+    @PostMapping("/logout") 
+    public ResponseEntity<Void> logout(HttpSession session) { 
+    	
+    	session.invalidate(); 
+    	return ResponseEntity.ok().build(); 
+    	
     }
 
 }
