@@ -39,7 +39,7 @@ public class VehiculoDto {
 	        this.modelo = modelo;
 	        this.stock = stock;
 	        this.precio = precio;
-	        this.sucursal = new SucursalDto(idsucursal, null, null);
+	        this.sucursal = new SucursalDto(idsucursal, null);
 	        this.imagenes = imagenes;
 	    }
 	

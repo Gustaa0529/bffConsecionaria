@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +18,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.config.JwtTokenProvider;
 import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.PaginadoDto;
+import com.example.demo.dto.SucursalDto;
 import com.example.demo.dto.UsuarioDto;
-import com.example.demo.requester.UsuarioRequester;
+import com.example.demo.dto.VehiculoDto;
+import com.example.demo.service.UsuarioService;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.java.Log;
 
 
 @RestController
@@ -33,7 +40,7 @@ import jakarta.servlet.http.HttpSession;
 public class UsuarioController {
 
 	@Autowired
-    private UsuarioRequester usuarioRequester;
+    private UsuarioService usuarioService;
 
 	@Autowired
     private AuthenticationManager authenticationManager;
@@ -46,7 +53,7 @@ public class UsuarioController {
     	if (usuarioDto == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        UsuarioDto usuarioGuardado = usuarioRequester.registro(usuarioDto);
+        UsuarioDto usuarioGuardado = usuarioService.registro(usuarioDto);
         return new ResponseEntity<>(usuarioGuardado, HttpStatus.CREATED);
     }
 
@@ -61,7 +68,7 @@ public class UsuarioController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        UsuarioDto usuarioDto = usuarioRequester.getUsuarioByCorreo(loginRequest.getCorreo());
+        UsuarioDto usuarioDto = usuarioService.getUsuarioByCorreo(loginRequest.getCorreo());
 
         final String token = jwtTokenProvider.createToken(authentication, usuarioDto);
 
@@ -81,8 +88,9 @@ public class UsuarioController {
             rol.set(x.getAuthority());
         });
 
-        return new ResponseEntity<>(new JwtResponse(token, rol.get(), userDetails.getUsername(), usuarioDto), responseHeaders, HttpStatus.OK);
-    }
+        JwtResponse jwtResponse = new JwtResponse(token, rol.get(), userDetails.getUsername(), userDetails.getAuthorities(), usuarioDto.getIdSucursal(), usuarioDto.getRol()); 
+        return new ResponseEntity<>(jwtResponse, responseHeaders, HttpStatus.OK); 
+        }
 
 
     @GetMapping("/verToken")
@@ -127,10 +135,39 @@ public class UsuarioController {
     
     @PostMapping("/logout") 
     public ResponseEntity<Void> logout(HttpSession session) { 
-    	
     	session.invalidate(); 
     	return ResponseEntity.ok().build(); 
     	
+    }
+    
+    @GetMapping("/listar/paginado")
+    public ResponseEntity<PaginadoDto<UsuarioDto>> listarUsuariosPaginados(
+            @RequestParam Integer size,
+            @RequestParam String sort,
+            @RequestParam Integer numPage,
+            HttpSession session) throws Exception {
+        if (session.getAttribute("usuario") != null) {
+            session.getAttribute("idSucursal");
+        }
+        Page<UsuarioDto> pageResult = usuarioService.listarUsuariosPaginados(size, sort, numPage);
+       
+
+	    PaginadoDto<UsuarioDto> response = new PaginadoDto<>(
+	            pageResult.getContent(),
+	            pageResult.getTotalElements(),
+	            pageResult.getTotalPages(),
+	            pageResult.getSize(),
+	            pageResult.getNumber()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.OK);
+
+    }
+
+    @GetMapping("/sucursales")
+    public ResponseEntity<List<SucursalDto>> listarSucursales() {
+        List<SucursalDto> sucursales = usuarioService.listarSucursales();
+        return new ResponseEntity<>(sucursales, HttpStatus.OK);
     }
 
 }

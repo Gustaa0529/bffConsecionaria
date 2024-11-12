@@ -1,18 +1,18 @@
 package com.example.demo.dto;
 
-public enum Rol{
+public enum FacturaEstadoEnum {
 	
-	ADMIN("Admin"),
-    EMPLEADO("Empleado");
-	
+	ORDENADO("Ordenado"),
+    VENDIDO("Vendido");
+
     private String displayName;
 
-    Rol(String displayName) {
+    FacturaEstadoEnum(String displayName) {
         this.displayName = displayName;
     }
 
     public String getDisplayName() {
         return displayName;
     }
-   
+
 }

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.EstadoEnum;
 import com.example.demo.dto.PaginadoDto;
+import com.example.demo.dto.SolicitudVehiculoDto;
 import com.example.demo.dto.VehiculoDto;
 import com.example.demo.service.VehiculoService;
 
@@ -76,4 +79,60 @@ public class VehiculoController {
 	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	@PostMapping("/guardarSolicitud")
+    public ResponseEntity<SolicitudVehiculoDto> guardarSolicitud(@RequestBody SolicitudVehiculoDto solicitudVehiculoDto) {
+		try { 
+			SolicitudVehiculoDto solicitudGuardada = vehiculoService.guardarSolicitud(solicitudVehiculoDto); 
+			return new ResponseEntity<>(solicitudGuardada, HttpStatus.CREATED); 
+			} catch (Exception e) {
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+    }
+
+	@GetMapping("/listarSolicitudes")
+    public ResponseEntity<PaginadoDto<SolicitudVehiculoDto>> listarSolicitudesPaginado(
+            @RequestParam Integer size,
+            @RequestParam String sort,
+            @RequestParam Integer numPage,
+            @RequestParam (required = false) Integer  idSucursal,
+	        HttpSession session) throws Exception {
+		  
+		    if (idSucursal == null) { 
+			idSucursal = (int) session.getAttribute("idSucursal"); 
+			}
+		
+        try {
+            Page<SolicitudVehiculoDto> solicitudes = vehiculoService.listarSolicitudesPaginado(size, sort, numPage, idSucursal);
+            PaginadoDto<SolicitudVehiculoDto> response = new PaginadoDto<>(
+                    solicitudes.getContent(),
+                    solicitudes.getTotalElements(),
+                    solicitudes.getTotalPages(),
+                    solicitudes.getSize(),
+                    solicitudes.getNumber()
+            );
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+	 @DeleteMapping("/eliminarSolicitud/{id}")
+	    public ResponseEntity<Void> eliminarSolicitud(@PathVariable int id) {
+	        try {
+	            vehiculoService.eliminarSolicitud(id);
+	            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	        } catch (Exception e) {
+	            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	        }
+	    }
+
+	    @PutMapping("/actualizarEstadoSolicitud/{id}")
+	    public ResponseEntity<SolicitudVehiculoDto> actualizarEstadoSolicitud(
+	            @PathVariable int id, @RequestParam EstadoEnum nuevoEstado) {
+	        try {
+	            SolicitudVehiculoDto solicitudActualizada = vehiculoService.actualizarEstadoSolicitud(id, nuevoEstado);
+	            return new ResponseEntity<>(solicitudActualizada, HttpStatus.OK);
+	        } catch (Exception e) {
+	            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	        }
+	    }
 }
